@@ -44,6 +44,7 @@ RUN git clone https://github.com/emoncms/dashboard.git /var/www/emoncms/Modules/
 RUN git clone https://github.com/emoncms/graph.git /var/www/emoncms/Modules/graph
 RUN git clone https://github.com/emoncms/app.git /var/www/emoncms/Modules/app
 RUN git clone https://github.com/emoncms/device.git /var/www/emoncms/Modules/device
+RUN git clone https://github.com/emoncms/sync.git /var/www/emoncms/Modules/sync
 
 COPY docker.settings.ini /var/www/emoncms/settings.ini
 
