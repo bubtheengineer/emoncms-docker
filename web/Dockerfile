@@ -14,15 +14,18 @@ RUN apt-get update && apt-get install -y \
 # Enable PHP modules
 RUN docker-php-ext-install -j$(nproc) mysqli gettext
 
+# Install python redis module
+RUN pip install redis
+
 # Install redis
 COPY install_redis.sh /
-RUN chmod +x /install_redis.sh
-RUN /install_redis.sh
+RUN chmod +x /install_redis.sh && \
+    /install_redis.sh
 
 # Install mosquitto
 COPY install_mosquitto.sh /
-RUN chmod +x /install_mosquitto.sh
-RUN /install_mosquitto.sh
+RUN chmod +x /install_mosquitto.sh && \
+    /install_mosquitto.sh
 
 RUN a2enmod rewrite
 
@@ -39,27 +42,32 @@ RUN a2ensite emoncms
 # ADD ./emoncms /var/www/html
 
 # Clone in master Emoncms repo & modules - overwritten in development with local FS files
-RUN mkdir /var/www/emoncms
-RUN git clone https://github.com/emoncms/emoncms.git /var/www/emoncms
-RUN git clone https://github.com/emoncms/dashboard.git /var/www/emoncms/Modules/dashboard
-RUN git clone https://github.com/emoncms/graph.git /var/www/emoncms/Modules/graph
-RUN git clone https://github.com/emoncms/app.git /var/www/emoncms/Modules/app
-RUN git clone https://github.com/emoncms/device.git /var/www/emoncms/Modules/device
-RUN git clone https://github.com/emoncms/sync.git /var/www/emoncms/Modules/sync
+RUN mkdir /var/www/emoncms && \
+    git clone https://github.com/emoncms/emoncms.git /var/www/emoncms && \
+    git clone https://github.com/emoncms/dashboard.git /var/www/emoncms/Modules/dashboard && \
+    git clone https://github.com/emoncms/graph.git /var/www/emoncms/Modules/graph && \
+    git clone https://github.com/emoncms/app.git /var/www/emoncms/Modules/app && \
+    git clone https://github.com/emoncms/device.git /var/www/emoncms/Modules/device && \
+    git clone https://github.com/emoncms/sync.git /home/pi/sync
+
+RUN chgrp www-data /home/pi && \
+    chgrp -R www-data /home/pi/sync && \
+    ln -s /var/www/html /var/www/emoncms && \
+    ln -s /home/pi/sync/sync-module /var/www/emoncms/Modules/sync
 
 COPY docker.settings.ini /var/www/emoncms/settings.ini
 
 # Create folders & set permissions for feed-engine data folders (mounted as docker volumes in docker-compose)
-RUN mkdir /var/opt/emoncms
-RUN mkdir /var/opt/emoncms/phpfina
-RUN mkdir /var/opt/emoncms/phptimeseries
-RUN chown www-data:root /var/opt/emoncms/phpfina
-RUN chown www-data:root /var/opt/emoncms/phptimeseries
+RUN mkdir /var/opt/emoncms && \
+    mkdir /var/opt/emoncms/phpfina && \
+    mkdir /var/opt/emoncms/phptimeseries && \
+    chown www-data:root /var/opt/emoncms/phpfina && \
+    chown www-data:root /var/opt/emoncms/phptimeseries
 
 # Create Emoncms logfile
-RUN mkdir /var/log/emoncms
-RUN touch /var/log/emoncms/emoncms.log
-RUN chmod 666 /var/log/emoncms/emoncms.log
+RUN mkdir /var/log/emoncms && \
+    touch /var/log/emoncms/emoncms.log && \
+    chmod 666 /var/log/emoncms/emoncms.log
 
 # To start Apache and emoncms_mqtt from supervisord
 COPY config/supervisord.conf /etc/supervisor/supervisord.conf
