@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
               gettext \
               nano \
               git-core \
-              supervisor
+              supervisor \
+              python3-pip
 
 # Enable PHP modules
 RUN docker-php-ext-install -j$(nproc) mysqli gettext
