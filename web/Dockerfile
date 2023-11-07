@@ -50,7 +50,8 @@ RUN mkdir /var/www/emoncms && \
     git clone https://github.com/emoncms/device.git /var/www/emoncms/Modules/device && \
     git clone https://github.com/emoncms/sync.git /home/pi/sync
 
-RUN sed -i "s|redis.Redis()|redis.Redis(host=os.environ['REDIS_HOST'],port=os.environ['REDIS_PORT'])|g" /home/pi/sync/
+RUN sed -i "s|import redis|import redis\nimport os|g" /var/www/emoncms/scripts/services/service-runner/service-runner.py && \
+    sed -i "s|redis.Redis()|redis.Redis(host=os.environ['REDIS_HOST'],port=os.environ['REDIS_PORT'])|g" /var/www/emoncms/scripts/services/service-runner/service-runner.py
 
 RUN chgrp www-data /home/pi && \
     chgrp -R www-data /home/pi/sync && \
